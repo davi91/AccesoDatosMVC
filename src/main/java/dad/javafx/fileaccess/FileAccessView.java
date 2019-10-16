@@ -59,9 +59,10 @@ public class FileAccessView extends BorderPane {
 		contentBt = new Button("Ver contenido fichero");
 		modBt = new Button("Modificar fichero");
 
-		contentBt.setPrefWidth(140);
-		modBt.setPrefWidth(140);
-		viewBt.setPrefWidth(140);
+		// Un truco para hacer que se expandan al máximo
+		contentBt.setMaxWidth(Double.MAX_VALUE);
+		modBt.setMaxWidth(Double.MAX_VALUE);
+		viewBt.setMaxWidth(Double.MAX_VALUE);
 
 		folderBt = new RadioButton("Es carpeta");
 		fichBt = new RadioButton("Es fichero");
