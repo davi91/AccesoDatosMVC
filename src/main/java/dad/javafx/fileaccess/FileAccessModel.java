@@ -1,13 +1,17 @@
 package dad.javafx.fileaccess;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
@@ -20,9 +24,13 @@ import javafx.collections.ObservableList;
 public class FileAccessModel {
 
 	private StringProperty ruta = new SimpleStringProperty();
-	private StringProperty file = new SimpleStringProperty();
+	private ObjectProperty<File> file = new SimpleObjectProperty<>();
 	private StringProperty content = new SimpleStringProperty();
-	private ListProperty<File> fileList = new SimpleListProperty<File>();
+	
+	// Esta parte es necesaria si queremos añadir elementos al array. El observableList tiene las funciones básicas para añadir elementos
+	private ObservableList<File> observableList = FXCollections.observableArrayList(new ArrayList<File>());
+	private ListProperty<File> fileList = new SimpleListProperty<>(observableList);
+	
 	private BooleanProperty isFolder= new SimpleBooleanProperty();
 	private BooleanProperty isFile = new SimpleBooleanProperty();
 	
@@ -36,18 +44,6 @@ public class FileAccessModel {
 	
 	public final void setRuta(final String ruta) {
 		this.rutaProperty().set(ruta);
-	}
-	
-	public final StringProperty fileProperty() {
-		return this.file;
-	}
-	
-	public final String getFile() {
-		return this.fileProperty().get();
-	}
-	
-	public final void setFile(final String file) {
-		this.fileProperty().set(file);
 	}
 	
 	public final StringProperty contentProperty() {
@@ -102,7 +98,19 @@ public class FileAccessModel {
 	public final void setIsFile(final boolean isFile) {
 		this.isFileProperty().set(isFile);
 	}
-		
+
+	public final ObjectProperty<File> fileProperty() {
+		return this.file;
+	}
 	
+
+	public final File getFile() {
+		return this.fileProperty().get();
+	}
+	
+
+	public final void setFile(final File file) {
+		this.fileProperty().set(file);
+	}	
 	
 }
