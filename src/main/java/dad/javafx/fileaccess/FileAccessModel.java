@@ -3,7 +3,6 @@ package dad.javafx.fileaccess;
 import java.io.File;
 import java.util.ArrayList;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -27,8 +26,9 @@ public class FileAccessModel {
 	private StringProperty ruta = new SimpleStringProperty();
 	private ObjectProperty<File> file = new SimpleObjectProperty<>();
 	
-	// Necesitamos un nombre para el fichero para que no nos ponga la ruta completa
-	private StringProperty fileName = new SimpleStringProperty();
+	/** Necesitamos un nombre para el fichero para que no nos ponga la ruta completa.
+	 Además, nos sirve para establecer rutas para mover archivos a otra ruta */
+	private StringProperty fileName = new SimpleStringProperty(); 
 	
 	private StringProperty content = new SimpleStringProperty();
 	
@@ -36,8 +36,15 @@ public class FileAccessModel {
 	private ObservableList<File> observableList = FXCollections.observableArrayList(new ArrayList<File>());
 	private ListProperty<File> fileList = new SimpleListProperty<>(observableList);
 	
+	/**
+	 * Es carpeta?
+	 */
 	private BooleanProperty isFolder= new SimpleBooleanProperty();
-	private BooleanProperty isFile = new SimpleBooleanProperty();
+	
+	/**
+	 * Es fichero?
+	 */
+	private BooleanProperty isFile = new SimpleBooleanProperty(true);
 	
 	
 	public final StringProperty rutaProperty() {

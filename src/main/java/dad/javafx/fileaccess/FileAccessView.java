@@ -33,7 +33,7 @@ public class FileAccessView extends BorderPane {
 	private Button createBt, removeBt, moveBt, viewBt, contentBt, modBt;
 	private RadioButton folderBt, fichBt;
 
-	public FileAccessView() {
+	public FileAccessView() { 
 
 		// Declaración principal
 		nombreLbl = new Label("David Fernández Nieves");
@@ -47,8 +47,7 @@ public class FileAccessView extends BorderPane {
 		nombreFichTxt.setPromptText("Carpeta o fichero a crear, eliminar o destino a mover");
 
 		contentArea = new TextArea();
-		contentArea.setPromptText("Contenido del fichero");
-		contentArea.setEditable(false);
+		contentArea.setPromptText("Contenido del fichero");;
 
 		fileList = new ListView<>(); // De momento no sabbemos cuantos crear, así que TO DO.....
 
