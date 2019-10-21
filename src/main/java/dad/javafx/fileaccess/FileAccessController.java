@@ -1,6 +1,8 @@
 package dad.javafx.fileaccess;
 
 import java.io.File;
+import java.io.IOException;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -26,30 +28,23 @@ public class FileAccessController {
 		// Aún no sabemos como se interactúa, de momento bidireccional
 		model.rutaProperty().bindBidirectional(view.getRutaTxt().textProperty());
 		
-	    model.fileProperty().bind(view.getFileList().getSelectionModel().selectedItemProperty());
 	    
 		// Por acción del botón, mostramos la lista de ficheros, luego es el root el que se modifica a partir del model, y el model a partir del evento
 		view.getFileList().itemsProperty().bind(model.fileListProperty());
 		
 		// File List
 	    model.fileProperty().bind(view.getFileList().getSelectionModel().selectedItemProperty());
-	    
-	    // Bindeamos el nombre del fichero con el fichero seleccionado
-	    view.getNombreFichTxt().textProperty().bind(
-	    		Bindings
-	    		.when(model.fileProperty().isNull())  // ¿No tenemos nada?
-	    		.then(new SimpleStringProperty("")) 
-	    		.otherwise(model.fileProperty().asString())
-	    );
-	    		
+	    view.getNombreFichTxt().textProperty().bindBidirectional(model.fileNameProperty());
+
 		// En este caso, puesto que son los botones los que nos indican el mostrar el contenido y el modificarlo, es un bindeo hacia el modelo
 		view.getContentArea().textProperty().bind(model.contentProperty());
 		
-		// Los radio buttons, es fichero o es carpeta
-		model.isFolderProperty().bind(view.getFolderBt().selectedProperty());
-		model.isFileProperty().bind(view.getFichBt().selectedProperty());
+		view.getFolderBt().selectedProperty().bind(model.isFolderProperty());
+	    view.getFichBt().selectedProperty().bind(model.isFileProperty());
 		
-		// Eventos de botones......TO DO
+		// Eventos de botones
+		view.getFileList().getSelectionModel().selectedItemProperty().addListener((o, lv, nv) -> onFileSelectionChanged(nv));
+		
 		view.getViewBt().setOnAction( e -> onFolderViewAction(e)); 
 		view.getCreateBt().setOnAction( e -> onCreateAction(e));
 		view.getMoveBt().setOnAction(e -> onMoveAction(e));
@@ -63,6 +58,24 @@ public class FileAccessController {
 		
 	}
 	
+
+	private void onFileSelectionChanged(File nv) {
+		
+		// Aquí tenemos que comprobar el fichero que se ha seleccionado
+		if( nv != null ) {
+			
+			model.setFileName(nv.getName());
+			model.setIsFile(nv.isFile());
+			model.setIsFolder(nv.isDirectory());
+		}
+		
+		else {
+			model.setFileName("");
+			model.setIsFile(false);
+			model.setIsFolder(false);
+		}
+	}
+
 
 	private void onMoveAction(ActionEvent e) {
 		// TODO
@@ -79,13 +92,21 @@ public class FileAccessController {
 	}
 
 	private void onRemoveAction(ActionEvent e) {
-		// TODO
+		
+		File file = model.getFile();
 	}
 
 	private void onCreateAction(ActionEvent e) {
 		
 		// Creamos un ficnhero en la ruta actual
+		File file = new File(model.getRuta() + "/" + model.getFileName());
 		
+		try {
+			file.createNewFile();
+		} catch (IOException e1) {
+
+			e1.printStackTrace();
+		}
 	}
 
 	private void onFolderViewAction(ActionEvent e) {

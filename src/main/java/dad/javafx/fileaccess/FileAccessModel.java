@@ -3,6 +3,7 @@ package dad.javafx.fileaccess;
 import java.io.File;
 import java.util.ArrayList;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -25,6 +26,10 @@ public class FileAccessModel {
 
 	private StringProperty ruta = new SimpleStringProperty();
 	private ObjectProperty<File> file = new SimpleObjectProperty<>();
+	
+	// Necesitamos un nombre para el fichero para que no nos ponga la ruta completa
+	private StringProperty fileName = new SimpleStringProperty();
+	
 	private StringProperty content = new SimpleStringProperty();
 	
 	// Esta parte es necesaria si queremos añadir elementos al array. El observableList tiene las funciones básicas para añadir elementos
@@ -33,6 +38,7 @@ public class FileAccessModel {
 	
 	private BooleanProperty isFolder= new SimpleBooleanProperty();
 	private BooleanProperty isFile = new SimpleBooleanProperty();
+	
 	
 	public final StringProperty rutaProperty() {
 		return this.ruta;
@@ -111,6 +117,21 @@ public class FileAccessModel {
 
 	public final void setFile(final File file) {
 		this.fileProperty().set(file);
-	}	
+	}
+
+	public final StringProperty fileNameProperty() {
+		return this.fileName;
+	}
+	
+
+	public final String getFileName() {
+		return this.fileNameProperty().get();
+	}
+	
+
+	public final void setFileName(final String fileName) {
+		this.fileNameProperty().set(fileName);
+	}
+		
 	
 }
