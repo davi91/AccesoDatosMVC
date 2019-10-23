@@ -1,8 +1,8 @@
 package dad.javafx.fileaccess;
 
-import java.io.File;
 import java.util.ArrayList;
 
+import dad.javafx.utils.FileView;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -24,17 +24,13 @@ import javafx.collections.ObservableList;
 public class FileAccessModel {
 
 	private StringProperty ruta = new SimpleStringProperty();
-	private ObjectProperty<File> file = new SimpleObjectProperty<>();
-	
-	/** Necesitamos un nombre para el fichero para que no nos ponga la ruta completa.
-	 Además, nos sirve para establecer rutas para mover archivos a otra ruta */
-	private StringProperty fileName = new SimpleStringProperty(); 
+	private ObjectProperty<FileView> file = new SimpleObjectProperty<>(); 
 	
 	private StringProperty content = new SimpleStringProperty();
 	
 	// Esta parte es necesaria si queremos añadir elementos al array. El observableList tiene las funciones básicas para añadir elementos
-	private ObservableList<File> observableList = FXCollections.observableArrayList(new ArrayList<File>());
-	private ListProperty<File> fileList = new SimpleListProperty<>(observableList);
+	private ObservableList<FileView> observableList = FXCollections.observableArrayList(new ArrayList<FileView>());
+	private ListProperty<FileView> fileList = new SimpleListProperty<>(observableList);
 	
 	/**
 	 * Es carpeta?
@@ -44,7 +40,7 @@ public class FileAccessModel {
 	/**
 	 * Es fichero?
 	 */
-	private BooleanProperty isFile = new SimpleBooleanProperty(true);
+	private BooleanProperty isFile = new SimpleBooleanProperty();
 	
 	
 	public final StringProperty rutaProperty() {
@@ -69,18 +65,6 @@ public class FileAccessModel {
 	
 	public final void setContent(final String content) {
 		this.contentProperty().set(content);
-	}
-	
-	public final ListProperty<File> fileListProperty() {
-		return this.fileList;
-	}
-	
-	public final ObservableList<File> getFileList() {
-		return this.fileListProperty().get();
-	}
-	
-	public final void setFileList(final ObservableList<File> fileList) {
-		this.fileListProperty().set(fileList);
 	}
 
 	public final BooleanProperty isFolderProperty() {
@@ -112,33 +96,35 @@ public class FileAccessModel {
 		this.isFileProperty().set(isFile);
 	}
 
-	public final ObjectProperty<File> fileProperty() {
+	public final ObjectProperty<FileView> fileProperty() {
 		return this.file;
 	}
 	
 
-	public final File getFile() {
+	public final FileView getFile() {
 		return this.fileProperty().get();
 	}
 	
 
-	public final void setFile(final File file) {
+	public final void setFile(final FileView file) {
 		this.fileProperty().set(file);
 	}
 
-	public final StringProperty fileNameProperty() {
-		return this.fileName;
+	public final ListProperty<FileView> fileListProperty() {
+		return this.fileList;
 	}
 	
 
-	public final String getFileName() {
-		return this.fileNameProperty().get();
+	public final ObservableList<FileView> getFileList() {
+		return this.fileListProperty().get();
 	}
 	
 
-	public final void setFileName(final String fileName) {
-		this.fileNameProperty().set(fileName);
+	public final void setFileList(final ObservableList<FileView> fileList) {
+		this.fileListProperty().set(fileList);
 	}
+	
+	
 		
 	
 }

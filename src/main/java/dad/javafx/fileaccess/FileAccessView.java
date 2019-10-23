@@ -1,7 +1,6 @@
 package dad.javafx.fileaccess;
 
-import java.io.File;
-
+import dad.javafx.utils.FileView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -29,8 +28,8 @@ public class FileAccessView extends BorderPane {
 	private Label nombreLbl, rutaLbl;
 	private TextField rutaTxt, nombreFichTxt;
 	private TextArea contentArea;
-	private ListView<File> fileList;
-	private Button createBt, removeBt, moveBt, viewBt, contentBt, modBt;
+	private ListView<FileView> fileList;
+	private Button createBt, removeBt, moveBt, viewBt, copyBt, contentBt, modBt;
 	private RadioButton folderBt, fichBt;
 
 	public FileAccessView() { 
@@ -44,7 +43,7 @@ public class FileAccessView extends BorderPane {
 		rutaTxt = new TextField();
 
 		nombreFichTxt = new TextField();
-		nombreFichTxt.setPromptText("Carpeta o fichero a crear, eliminar o destino a mover");
+		nombreFichTxt.setPromptText("Carpeta o fichero seleccionado");
 
 		contentArea = new TextArea();
 		contentArea.setPromptText("Contenido del fichero");;
@@ -54,6 +53,7 @@ public class FileAccessView extends BorderPane {
 		createBt = new Button("Crear");
 		removeBt = new Button("Eliminar");
 		moveBt = new Button("Mover");
+		copyBt = new Button("Copiar");
 		viewBt = new Button("Ver ficheros y carpetas");
 		contentBt = new Button("Ver contenido fichero");
 		modBt = new Button("Modificar fichero");
@@ -78,7 +78,7 @@ public class FileAccessView extends BorderPane {
 		grid.addRow(0, rutaLbl, rutaTxt); // Ruta
 
 		// Los botones en un Horizontal Box
-		HBox btBox = new HBox(80, createBt, removeBt, moveBt, folderBt, fichBt); // Botones principales de manejo de
+		HBox btBox = new HBox(80, createBt, removeBt, moveBt, copyBt, folderBt, fichBt); // Botones principales de manejo de
 																					// ficheros
 		btBox.setAlignment(Pos.BASELINE_CENTER);
 
@@ -122,6 +122,14 @@ public class FileAccessView extends BorderPane {
 		setAlignment(grid, Pos.CENTER);
 	}
 
+	public Button getCopyBt() {
+		return copyBt;
+	}
+
+	public void setFolderBt(RadioButton folderBt) {
+		this.folderBt = folderBt;
+	}
+
 	public Label getNombreLbl() {
 		return nombreLbl;
 	}
@@ -142,7 +150,7 @@ public class FileAccessView extends BorderPane {
 		return contentArea;
 	}
 
-	public ListView<File> getFileList() {
+	public ListView<FileView> getFileList() {
 		return fileList;
 	}
 
