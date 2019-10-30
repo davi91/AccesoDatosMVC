@@ -29,18 +29,18 @@
    </rowConstraints>
    <children>
       <Label text="Fichero residencias:" />
-      <TextField fx:id="rutaTxt" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="428.0" promptText=" Archivo residencias" GridPane.columnIndex="1">
+      <TextField maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="428.0" promptText=" Ruta del ficehero residencias" GridPane.columnIndex="1">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
       </TextField>
-      <Button fx:id="consultaBt" mnemonicParsing="false" text="Consultar residencias" GridPane.columnIndex="2" />
+      <Button mnemonicParsing="false" text="Consultar residencias" GridPane.columnIndex="2" />
       <HBox alignment="BASELINE_LEFT" fillHeight="false" spacing="50.0" GridPane.columnSpan="3" GridPane.rowIndex="1">
          <children>
             <Label text="Residencia ID:" />
-            <TextField fx:id="resiID" alignment="BASELINE_CENTER" maxWidth="-Infinity" prefColumnCount="2" promptText="ID" />
-            <Button fx:id="consultaIDBt" mnemonicParsing="false" text="Consultar residencia por ID" />
-            <Button fx:id="modPrecioBt" mnemonicParsing="false" text="Modificar Precio Mensual" />
+            <TextField alignment="BASELINE_CENTER" maxWidth="-Infinity" prefColumnCount="2" promptText="ID" />
+            <Button mnemonicParsing="false" text="Consultar residencias por ID" />
+            <Button mnemonicParsing="false" text="Modificar Precio Mensual" />
          </children>
       </HBox>
       <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">

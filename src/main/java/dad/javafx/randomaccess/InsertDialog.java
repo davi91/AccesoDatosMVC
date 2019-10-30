@@ -1,9 +1,8 @@
 package dad.javafx.randomaccess;
 
-import javafx.beans.value.ObservableValue;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.binding.StringExpression;
+import javafx.scene.Node;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.ButtonType;
@@ -15,30 +14,83 @@ import javafx.scene.image.ImageView;
 
 public class InsertDialog extends Dialog<Residencia> {
 
+	private static class DialogCheckBinding extends BooleanBinding {
+
+		private StringExpression id, nombre, codUni, precio;
+		
+	
+		public DialogCheckBinding(StringExpression id, StringExpression nombre,
+								  StringExpression codUni, StringExpression precio) {
+			
+			
+			this.id = id;
+			this.nombre = nombre;
+			this.codUni = codUni;
+			this.precio = precio;
+			bind(this.id, this.nombre, this.codUni, this.precio);
+			
+		}
+		
+		private boolean checkValidFields() {
+			
+			boolean check;
+			
+			check = id.get().isEmpty();
+			check |= nombre.get().isEmpty();
+			check |= codUni.get().isEmpty();
+			check |= precio.get().isEmpty();
+			 
+			return !check && checkIsNumeric(id.get(), precio.get());
+		}
+		
+
+		private boolean checkIsNumeric(String id, String precio) {
+			
+			try {
+				
+				@SuppressWarnings("unused")
+				int idVal = Integer.parseInt(id);
+				@SuppressWarnings("unused")
+				float precioVal = Float.parseFloat(precio);
+				
+				return true;
+				
+			} catch( NumberFormatException e) {
+				// Devolvemos al final "false"
+			}
+			
+			return false;
+		}
+		
+		@Override
+		protected boolean computeValue() {
+			return checkValidFields();
+		}
+		
+	}
+	
 	private ButtonType okButton, cancelButton;
 	private TextField id, nombre, codUni, precio;
 	private CheckBox comedor;
-	private Button myBt;
+	private Node buttonInsert;
 	
 	public InsertDialog() {
 		
 		// Los textos
 		setTitle("Insertar residencia");
 		setHeaderText("Rellenar datos de la residencia");
+		setContentText("* Debe rellenar todos los campos\n* Los campos id y precio deben ser numéricos");
 		
 		// Un bonito icono
-		ImageView fileIcon = new ImageView(getClass().getResource("/images/fileIcon.png").toString());
-		fileIcon.setFitWidth(48.0f);
-		fileIcon.setFitHeight(48.0f);
-		setGraphic(fileIcon);
+		ImageView resiIcon = new ImageView(getClass().getResource("/images/resiIcon.png").toString());
+		resiIcon.setFitWidth(48.0f);
+		resiIcon.setFitHeight(48.0f);
+		setGraphic(resiIcon);
 		
 		// Los botones
-		
 		okButton = new ButtonType("Insertar", ButtonData.OK_DONE);
 		cancelButton = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
 		
-		myBt = (Button) getDialogPane().lookupButton(ButtonType.OK);
-		myBt.setDisable(true);
 		getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
 		
 		// Ahora nuestra vista
@@ -72,52 +124,19 @@ public class InsertDialog extends Dialog<Residencia> {
 		comedor = new CheckBox();
 		grid.addRow(4,  comedorLbl, comedor);
 		
-		getDialogPane().setContent(grid);
+		// Desactivamos el botón si no cumple con las condiciones
+		buttonInsert = getDialogPane().lookupButton(okButton);
+		buttonInsert.disableProperty().bind(new DialogCheckBinding(id.textProperty(), nombre.textProperty(), 
+																   codUni.textProperty(), precio.textProperty()).not());
 
+		getDialogPane().setContent(grid);
 		setResultConverter( bt -> onActionPerformed(bt) );
 	}
 
 
-	private boolean checkValidFields() {
-		
-		boolean check;
-		
-		check = id.getText().isEmpty();
-		check |= nombre.getText().isEmpty();
-		check |= codUni.getText().isEmpty();
-		check |= precio.getText().isEmpty();
-		 
-		return !check && checkIsNumeric(id.getText(), precio.getText());
-	}
-	
-	@SuppressWarnings("unused")
-	private boolean checkIsNumeric(String id, String precio) {
-		
-		try {
-			
-			int idVal = Integer.parseInt(id);
-			float precioVal = Float.parseFloat(precio);
-			
-			return true;
-			
-		} catch( NumberFormatException e) {
-			
-		}
-		
-		return false;
-	}
-	
 	private Residencia onActionPerformed(ButtonType bt) {
 		
 		if( bt == okButton ) {
-			
-			if( !checkValidFields() ) {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setHeaderText("Campos incorrectos");
-				alert.setContentText("Debe rellenar todos los campos, los campos\n id y precio deben ser valores númericos");
-				alert.showAndWait();
-			}
-			
 			// Hemos garantizado que tienen que ser números
 			float precioVal = Float.parseFloat(precio.getText());
 			int idVal = Integer.parseInt(id.getText());
@@ -130,4 +149,6 @@ public class InsertDialog extends Dialog<Residencia> {
 		
 		return null;
 	}
+	
+
 }

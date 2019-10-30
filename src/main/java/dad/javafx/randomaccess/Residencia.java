@@ -1,5 +1,6 @@
 package dad.javafx.randomaccess;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -16,6 +17,7 @@ public class Residencia {
 	private StringProperty name = new SimpleStringProperty();
 	private StringProperty codUniversidad = new SimpleStringProperty();
 	private FloatProperty precio = new SimpleFloatProperty();
+	private StringProperty comedorStr = new SimpleStringProperty();
 	private BooleanProperty comedor = new SimpleBooleanProperty();
 	
 	public Residencia(int id, String name, String codUniversidad, float precio, boolean comedor ) {
@@ -25,6 +27,13 @@ public class Residencia {
 		setCodUniversidad(codUniversidad);
 		setPrecio(precio);
 		setComedor(comedor);
+		
+		// Ajustamos el texto que se verá en la tabla
+		comedorStr.bind( Bindings
+				.when(this.comedor)
+				.then(new SimpleStringProperty("Si"))
+				.otherwise(new SimpleStringProperty("No"))
+				);
 	}
 	
 	public final IntegerProperty idProperty() {
@@ -86,6 +95,21 @@ public class Residencia {
 	public final void setComedor(final boolean comedor) {
 		this.comedorProperty().set(comedor);
 	}
+
+	public final StringProperty comedorStrProperty() {
+		return this.comedorStr;
+	}
+	
+
+	public final String getComedorStr() {
+		return this.comedorStrProperty().get();
+	}
+	
+
+	public final void setComedorStr(final String comedorStr) {
+		this.comedorStrProperty().set(comedorStr);
+	}
+	
 	
 	
 }
