@@ -299,11 +299,6 @@ public class RandomAccessController implements Initializable {
 	 */
 	private void consultaResidencias() {
 		
-		if( residenciasFile != null ) {
-			// Limpiamos lo que tengamos
-			resiList.removeAll();
-		}
-		
 		// Primero vamos a abrir el explorador de archivos
 		FileChooser explorer = new FileChooser();
 		explorer.setTitle("Explorador residencias");
@@ -316,6 +311,12 @@ public class RandomAccessController implements Initializable {
 		
 		// Aquí empezamosa implementar los métodos de consulta
 		if( datFile != null ) {
+			
+			if( residenciasFile.get() != null ) {
+				// Limpiamos lo que tengamos
+				resiListProperty.clear();
+			}
+			
 			residenciasFile.set(datFile);
 			
 			// Ahora es cuando empezamos a consultar el archivo

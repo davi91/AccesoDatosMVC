@@ -6,14 +6,13 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.control.cell.*?> 
-<?import fxmltableview.*?> 
 
 <GridPane fx:id="view" hgap="15.0" prefHeight="600.0" prefWidth="800.0" vgap="15.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <columnConstraints>
@@ -53,25 +52,25 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <TableView fx:id="resiTable" prefHeight="356.0" prefWidth="780.0">
+            <TableView fx:id="resiTable" prefHeight="356.0" prefWidth="780.0" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn prefWidth="40.0" text="ID" >
+                <TableColumn prefWidth="40.0" text="ID">
 	                 <cellValueFactory><PropertyValueFactory property="id" />
 	       			 </cellValueFactory>
        			 </TableColumn>
-                <TableColumn prefWidth="222.0" text="Nombre residencia" >
+                <TableColumn prefWidth="222.0" text="Nombre residencia">
 	                  <cellValueFactory><PropertyValueFactory property="name" />
 	       			 </cellValueFactory>
        			 </TableColumn>
-                  <TableColumn prefWidth="172.0" text="Cod. Universidad" >
+                  <TableColumn prefWidth="172.0" text="Cod. Universidad">
 	                  <cellValueFactory><PropertyValueFactory property="codUniversidad" />
 	       			 </cellValueFactory>
 	       		  </TableColumn>
-	       		  <TableColumn prefWidth="236.0" text="Precio mensual" >
+	       		  <TableColumn prefWidth="236.0" text="Precio mensual">
 	                  <cellValueFactory><PropertyValueFactory property="precio" />
 	       			 </cellValueFactory>
 	       		  </TableColumn>
-	       		  <TableColumn prefWidth="109.0" text="Comedor" >
+	       		  <TableColumn prefWidth="109.0" text="Comedor">
 	                  <cellValueFactory><PropertyValueFactory property="comedorStr" />
 	       			 </cellValueFactory>
 	       		  </TableColumn>
