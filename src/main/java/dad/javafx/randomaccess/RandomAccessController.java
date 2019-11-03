@@ -34,6 +34,11 @@ public class RandomAccessController implements Initializable {
 	private static final int LEN_RESIDENCIAS = 10;
 	private static final int LEN_UNIVERSIDAD = 6;
 	
+	/**
+	 * El tamaño total de cada campo de residencia
+	 */
+	private static final int LEN_RESIDENCIA_BYTES = 51;
+	
 	// FXML : View
 	//-------------------------------------------------------------------------
 	
@@ -68,6 +73,7 @@ public class RandomAccessController implements Initializable {
 	
 	private StringProperty ruta = new SimpleStringProperty();
 	
+	private StringProperty id = new SimpleStringProperty();
 	//-------------------------------------------------------------------------
 	
 	public RandomAccessController() throws IOException {
@@ -86,8 +92,32 @@ public class RandomAccessController implements Initializable {
 		
 		// Desactivamos los botones si no hay ninguna lista cargada
 		insertResiBt.disableProperty().bind(resiListProperty.emptyProperty()); 
-		consultaIDBt.disableProperty().bind(resiTable.getSelectionModel().selectedItemProperty().isNull());
-		modPrecioBt.disableProperty().bind(resiTable.getSelectionModel().selectedItemProperty().isNull());
+		
+		id.bindBidirectional(resiID.textProperty());
+		
+		/*
+		 * Como no podemos hacer un "triple binding", si queremos que se nos
+		 * actualize el ID con elemento seleccionado al mismo tiempo que 
+		 * perimitimos escribir un ID nosotros mismos le ponemos un listener
+		 */
+		resiTable.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> onResiIDChanged(nv));
+		resiID.disableProperty().bind(resiListProperty.emptyProperty());
+	
+		/*
+		 *  La consulta y modificación la vamos a hacer por el ID introducido por el usuario.
+		 *  En caso de que no haya ID se usará el elemento seleccionado en la lista.
+		 */
+		consultaIDBt.disableProperty().bind(resiListProperty.emptyProperty().or(
+				
+					resiID.textProperty().isEmpty().and(
+					resiTable.getSelectionModel().selectedItemProperty().isNull()
+				)));
+		
+		modPrecioBt.disableProperty().bind(resiListProperty.emptyProperty().or(
+				
+				resiID.textProperty().isEmpty().and(
+				resiTable.getSelectionModel().selectedItemProperty().isNull()
+			)));
 		
 		// Establecemos la ruta
 		ruta.bind( Bindings
@@ -99,11 +129,40 @@ public class RandomAccessController implements Initializable {
 		rutaTxt.textProperty().bind(ruta);
 		
 		// Ajustamos la tabla para ajustar los campos de la misma
-		resiTable.setItems(resiList);
+		resiTable.itemsProperty().bind(resiListProperty);
 		insertResiBt.setOnAction( evt -> insertarResidencia() );
 		consultaBt.setOnAction( evt -> consultaResidencias() );
+		consultaIDBt.setOnAction( evt -> consultarResidenciaID());
 	}
 	
+	
+	/**
+	 * Cada vez que se produce un cambio en la lista modificamos el ID 
+	 * de residencia seleccionado
+	 * @param nv La residencia seleccionada
+	 */
+	private void onResiIDChanged(Residencia nv) {
+		id.set( String.valueOf(nv.getId()));
+	}
+
+	/** 
+	 * Tenemosq ue comprobar si la reesidencia es válida, para
+	 * ello lo comparamos con los datos de la tabla para ver
+	 * si ya existe ese ID.
+	 * 
+	 * @param myResi Residencia
+	 * @return Si no existe un ID igual al introducido
+	 */
+	private boolean checkIfResiValid(Residencia myResi) {
+		
+		for( Residencia r : resiListProperty.get()) {
+			
+			if( r.getId() == myResi.getId() ) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	/**
 	 * Insertamos una residencia a partir de un cuadro de
@@ -119,6 +178,16 @@ public class RandomAccessController implements Initializable {
 		// Ahora es cuando añadimos datos a la tabla
 		if( result.isPresent() ) {
 			
+			if( !checkIfResiValid(result.get())) {
+				
+				Alert alert = new Alert(AlertType.WARNING);
+				alert.setTitle("Residencia");
+				alert.setHeaderText("Coincidencia por ID");
+				alert.setContentText("La residencia introducida ya existe");
+				alert.showAndWait();
+				return;
+			}
+			
 			// Tenemos que ser cautelosos, tenemos que ajustar bien los caracteres
 			insertResidenciaTable(result.get());
 			
@@ -126,8 +195,6 @@ public class RandomAccessController implements Initializable {
 			resiTable.getSelectionModel().clearSelection();
 			resiTable.getSelectionModel().select(result.get());	
 		}
-		
-		// Debemos de guardar los cambios en caso de insertar o modificar
 	}
 	
 	/**
@@ -144,20 +211,64 @@ public class RandomAccessController implements Initializable {
 		if( nombre.length() < LEN_RESIDENCIAS ) {
 			
 			for( int i = nombre.length(); i < LEN_RESIDENCIAS; i++ ) {
-				nombre += "";
+				nombre += " ";
 			}
 		} else {
-			nombre = nombre.substring(0,LEN_RESIDENCIAS);
+			nombre = nombre.substring(0,LEN_RESIDENCIAS); // No más de 10 caracteres
 		}
 		
 		if( codUni.length() < LEN_UNIVERSIDAD ) {
 			
 			for( int i = codUni.length(); i < LEN_UNIVERSIDAD; i++ ) {
-				codUni += "";
+				codUni += " ";
 			}
 		} else {
-			codUni = codUni.substring(0,LEN_UNIVERSIDAD);
+			codUni = codUni.substring(0,LEN_UNIVERSIDAD); // No más de 10 caracteres
 		}
+		
+		resiListProperty.add(new Residencia(myResi.getId(), nombre, codUni, myResi.getPrecio(), myResi.isComedor()));
+		
+		// Actualizamos el fichero con la nueva residencia
+		
+		RandomAccessFile resiFile = null;
+		
+		try {
+			resiFile = new RandomAccessFile( residenciasFile.get(), "rw");
+		
+			// Nos vamos al final del fichero
+			resiFile.seek(resiFile.length());
+			
+			// Ahora escribimos los datos de la residencia
+			resiFile.writeInt(myResi.getId());
+			resiFile.writeChar(',');
+			resiFile.writeChars(nombre);
+			resiFile.writeChar(',');
+			resiFile.writeChars(codUni);
+			resiFile.writeChar(',');
+			resiFile.writeFloat(myResi.getPrecio());
+			resiFile.writeChar(',');
+			resiFile.writeBoolean(myResi.isComedor());
+			resiFile.writeChar(',');
+			
+		} catch( EOFException eof) {
+			// Se ejecuta el finally de forma automática
+		} catch (IOException e) {
+			sendFileError(residenciasFile.getName());
+			
+		} finally {
+			
+			if( resiFile != null ) {
+				
+				try {
+					resiFile.close();
+					
+				} catch (IOException e) {
+					
+					sendFileError(residenciasFile.getName());
+				}
+			}
+		} 
+		
 	}
 	
 	/**
@@ -222,19 +333,31 @@ public class RandomAccessController implements Initializable {
 				
 				id = resiFile.readInt();
 				
+				resiFile.readChar(); // ','
+				
 				// Leemos 10 caracteres
 				for( int i = 0; i < LEN_RESIDENCIAS; i++ ) 
 					nombre += resiFile.readChar();
+				
+				resiFile.readChar(); // ','
 				
 				// Leemos 6 caracteres
 				for( int i = 0; i < LEN_UNIVERSIDAD; i++ ) {
 					codUni += resiFile.readChar();
 				}
 				
+				resiFile.readChar(); // ','
+				
 				precio = resiFile.readFloat();
+				
+				resiFile.readChar(); // ','
+				
 				comedor = resiFile.readBoolean();
 				
-				resiList.add(new Residencia(id, nombre, codUni, precio, comedor));
+				resiFile.readChar(); // ','
+				resiListProperty.add(new Residencia(id, nombre, codUni, precio, comedor));
+				
+				nombre = codUni = "";
 			}
 			
 			
@@ -259,6 +382,111 @@ public class RandomAccessController implements Initializable {
 		}
 	}
 	
+	
+	/**
+	 * De forma normal consultaríamos los datos de la residencia
+	 * a partir de la tabla, pero como estamos en Acceso a Datos,
+	 * lo haremos a partir del fichero.
+	 */
+	private void consultarResidenciaID() {
+		
+		// Primero comprobamos que haya un ID válido
+		if( !isIDValid(id.get())) {
+			
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("ID");
+			alert.setHeaderText("ID no válido");
+			alert.setContentText("Por favor, introduzca un ID válido");
+			alert.showAndWait();
+			return;
+		}
+		
+		// Ahora comprobamos que el ID existe y poodemos mostrar información
+		RandomAccessFile resiFile = null;
+		
+		try {
+			resiFile = new RandomAccessFile(residenciasFile.get(), "r");
+			
+			int rId = Integer.parseInt(id.get()); // ya sabemos que es válido
+			// Para acceder al ID de la residencia, usamos la siguiente expresión
+			resiFile.seek(LEN_RESIDENCIA_BYTES*(rId-1));
+			
+			int id;
+			float precio;
+			boolean comedor;
+			String nombre, codUni;
+			
+			nombre = codUni = "";
+			
+			id = resiFile.readInt();
+			resiFile.readChar(); // ',';
+			
+			for( int i = 0; i < LEN_RESIDENCIAS; i++ ) 
+				nombre += resiFile.readChar();
+			
+			resiFile.readChar(); // ',';
+			
+			for( int i = 0; i < LEN_UNIVERSIDAD; i++ ) 
+				codUni += resiFile.readChar();
+			
+			resiFile.readChar(); // ',';
+			
+			precio = resiFile.readFloat();
+			resiFile.readChar(); // ',';
+			
+			comedor = resiFile.readBoolean();
+			
+			// Mostramos la información de la residencia
+			InfoDialog dialog = new InfoDialog(new Residencia(id, nombre, codUni, precio, comedor));
+			dialog.showAndWait();
+			
+		} catch(EOFException eof ) {
+			
+			// En caso de que hayamos llegado al final del fichero es que no hemos encontrado la residencia
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("ID");
+			alert.setHeaderText("ID no válido");
+			alert.setContentText("No se ha encontrado el ID seleccionado");
+			alert.showAndWait();
+			
+		} catch (IOException e) {
+			sendFileError(residenciasFile.getName());
+			
+		} finally {
+			
+			if( resiFile != null ) {
+				
+				try {
+					
+					resiFile.close();
+					
+				} catch (IOException e) {
+					sendFileError(residenciasFile.getName());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Comprobamos que el ID es un número
+	 * @param id El ID de la residencia
+	 * @return Si el ID es un número o no
+	 */
+	private boolean isIDValid(String id) {
+		
+		try {
+			
+			@SuppressWarnings("unused")
+			int idN = Integer.parseInt(id);
+			return true; // Si no se ha producido una excepción
+			
+		} catch(NumberFormatException e) {
+			// return false
+		}
+		
+		return false;
+	}
+	
 	private void sendFileError(String fileName) {
 		
 		Alert alert = new Alert(AlertType.ERROR);
@@ -266,5 +494,20 @@ public class RandomAccessController implements Initializable {
 		alert.setHeaderText("Error al cargar el fichero " + fileName);
 		alert.showAndWait();
 	}
+
+	public final ListProperty<Residencia> resiListPropertyProperty() {
+		return this.resiListProperty;
+	}
+	
+
+	public final ObservableList<Residencia> getResiListProperty() {
+		return this.resiListPropertyProperty().get();
+	}
+	
+
+	public final void setResiListProperty(final ObservableList<Residencia> resiListProperty) {
+		this.resiListPropertyProperty().set(resiListProperty);
+	}
+	
 
 }

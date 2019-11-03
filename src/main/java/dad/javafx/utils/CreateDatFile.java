@@ -26,13 +26,15 @@ public class CreateDatFile {
 			file.setLength(0);
 			// Escribimos uno de jemplo
 			file.writeInt(1);
-			
+			file.writeChar(',');
 			file.writeChars("resiNueva ");
-			
+			file.writeChar(',');
 			file.writeChars("000001");
-			
+			file.writeChar(',');
 			file.writeFloat(1200);
+			file.writeChar(',');
 			file.writeBoolean(true);
+			file.writeChar(',');
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

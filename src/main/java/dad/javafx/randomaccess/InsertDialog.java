@@ -98,31 +98,36 @@ public class InsertDialog extends Dialog<Residencia> {
 		grid.setHgap(5);
 		grid.setVgap(5);
 		
+		Label infoLabel = new Label(getContentText());
+		infoLabel.setWrapText(true);
+		grid.addRow(0, infoLabel);
+		GridPane.setColumnSpan(infoLabel, 2);
+		
 		Label idLbl = new Label("ID:");
 		id = new TextField();
 		id.setPromptText("ID");
 		id.setPrefColumnCount(2);
-		grid.addRow(0, idLbl , id);
+		grid.addRow(1, idLbl , id);
 		
 		Label nombreLbl = new Label("Nombre:");
 		nombre = new TextField();
 		nombre.setPromptText("Nombre");
-		grid.addRow(1,  nombreLbl, nombre);
+		grid.addRow(2,  nombreLbl, nombre);
 		
 		Label codUniLbl = new Label("Universidad:");
 		codUni = new TextField();
 		codUni.setPromptText("Código");
-		grid.addRow(2,  codUniLbl, codUni);
+		grid.addRow(3,  codUniLbl, codUni);
 		
 		Label precioLbl = new Label("Precio:");
 		precio = new TextField();
 		precio.setPromptText("Precio");
 		precio.setPrefColumnCount(3);
-		grid.addRow(3,  precioLbl, precio);
+		grid.addRow(4,  precioLbl, precio);
 		
 		Label comedorLbl = new Label("Comedor");
 		comedor = new CheckBox();
-		grid.addRow(4,  comedorLbl, comedor);
+		grid.addRow(5,  comedorLbl, comedor);
 		
 		// Desactivamos el botón si no cumple con las condiciones
 		buttonInsert = getDialogPane().lookupButton(okButton);
