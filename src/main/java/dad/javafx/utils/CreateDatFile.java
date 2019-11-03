@@ -1,6 +1,5 @@
 package dad.javafx.utils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -14,6 +13,7 @@ import java.io.RandomAccessFile;
 public class CreateDatFile {
 
 	public static void main(String[] args) {
+		@SuppressWarnings("unused")
 		CreateDatFile datFile = new CreateDatFile();
 	}
 	public CreateDatFile() {

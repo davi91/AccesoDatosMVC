@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -25,10 +26,27 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 
+/**
+ * En esta pestaña consultamos todo lo referenciado a las residecias. Para ello
+ * nos valemos de un fichero con extensión '*.dat' que nos permitirá consultar esos
+ * datos. 
+ * <br>
+ * También podemos modificarle el precio a una residencia e insertar una residencia nueva, 
+ * todo en vivo, de manera que cualquier cambio en alguno de estos casos se actualizará 
+ * directamente en el fichero.
+ * <br>
+ * También se permite consultar una residencia por el ID, mediante un cuadro de texto, al
+ * igual que al modificar el precio.
+ * 
+ * @author David Fernández Nieves
+ * @version 1.0
+ *
+ */
 public class RandomAccessController implements Initializable {
 	
 	private static final int LEN_RESIDENCIAS = 10;
@@ -74,6 +92,7 @@ public class RandomAccessController implements Initializable {
 	private StringProperty ruta = new SimpleStringProperty();
 	
 	private StringProperty id = new SimpleStringProperty();
+	
 	//-------------------------------------------------------------------------
 	
 	public RandomAccessController() throws IOException {
@@ -133,6 +152,7 @@ public class RandomAccessController implements Initializable {
 		insertResiBt.setOnAction( evt -> insertarResidencia() );
 		consultaBt.setOnAction( evt -> consultaResidencias() );
 		consultaIDBt.setOnAction( evt -> consultarResidenciaID());
+		modPrecioBt.setOnAction( evt -> modificarPrecioID());
 	}
 	
 	
@@ -347,7 +367,7 @@ public class RandomAccessController implements Initializable {
 				}
 				
 				resiFile.readChar(); // ','
-				
+
 				precio = resiFile.readFloat();
 				
 				resiFile.readChar(); // ','
@@ -464,6 +484,127 @@ public class RandomAccessController implements Initializable {
 					sendFileError(residenciasFile.getName());
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Modificamos el precio directamente en le fichero
+	 */
+	private void modificarPrecioID() {
+		
+		// Primero comprobamos que haya un ID válido
+		if( !isIDValid(id.get())) {
+			
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("ID");
+			alert.setHeaderText("ID no válido");
+			alert.setContentText("Por favor, introduzca un ID válido");
+			alert.showAndWait();
+			return;
+		}
+		
+		// Ahora comprobamos que el ID existe y poodemos mostrar información
+		RandomAccessFile resiFile = null;
+		
+		try {
+			
+			resiFile = new RandomAccessFile(residenciasFile.get(), "rw");
+			
+			// El precio está en el lugar 42 contando en bytes desde el principio de la residencia
+			final int locPrecioBytes = 42;
+			
+			int rId = Integer.parseInt(id.get()); // ya sabemos que es válido
+			
+			// Para acceder al ID de la residencia, usamos la siguiente expresión
+			resiFile.seek(LEN_RESIDENCIA_BYTES*(rId-1));
+			resiFile.skipBytes(locPrecioBytes); // Nos despalazmos al precio, desde donde está el puntero
+			
+			/*
+			 *  Necesitamos los datos de la residencia para actualizar la tabla,
+			 *  para ello dejamos el fichero como está y simplemente accedemos
+			 *  a la tabla
+			 */
+			
+			// Aprovechamos el EOFException para lanzara el error de ID no válido, aunque no sea en el fichero, así agilizamos el proceso
+			Residencia resi = findResidenciaById(rId);
+			if( resi == null ) {
+				throw new EOFException(); 
+			}
+			
+			TextInputDialog dialog = new TextInputDialog(String.valueOf(resi.getPrecio()));
+			dialog.setTitle("Residencia " + resi.getName());
+			dialog.setHeaderText("Modificar precio");
+			
+			Optional<String> precio = dialog.showAndWait();
+			float precioFinal = 0;
+			
+			// Tenemos un precio
+			if( precio.isPresent() && !precio.get().isBlank() && !precio.get().isEmpty() ) {
+				
+				// Verificamos que el precio es válido
+				try {
+					precioFinal = Float.parseFloat(precio.get());
+					
+				} catch( NumberFormatException e) {
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setTitle("Precio");
+					alert.setHeaderText("Precio no válido");
+					alert.setContentText("El precio introducido no es válido");
+					alert.showAndWait();
+					throw new Exception(); // Nos aseguramos de cerrar el fichero entonces
+				}
+			} else {
+				throw new Exception(); // Nos aseguramos de cerrar el fichero entonces
+			}
+			
+			// Los datos a introducir son válidos, entonces procedemos
+			
+			// Primero actualizamos el fichero
+			resiFile.writeFloat(precioFinal);
+			
+			// Ahora actualizamos la tabla, para no tener que cargar de nuevo todos los datos
+			resi.setPrecio(precioFinal);
+			
+		} catch(EOFException eof ) {
+			
+			// En caso de que hayamos llegado al final del fichero es que no hemos encontrado la residencia
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("ID");
+			alert.setHeaderText("ID no válido");
+			alert.setContentText("No se ha encontrado el ID seleccionado");
+			alert.showAndWait();
+			
+		} catch (IOException e) {
+			sendFileError(residenciasFile.getName());
+		} catch( Exception e) {
+			// Nos sirve para poder cerrar el fichero al final
+		} finally {
+			
+			if( resiFile != null ) {
+				
+				try {
+					resiFile.close();
+					
+				} catch (IOException e) {
+					sendFileError(residenciasFile.getName());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Buscamos la residencia por el ID
+	 * @param id El ID de la residencia
+	 * @return La residencia coincidente con el ID o null si no se encuentra
+	 */
+	private Residencia findResidenciaById(int id) {
+		
+		ArrayList<Residencia> rList = new ArrayList<>(resiListProperty.get());
+		
+		try {
+			return rList.stream().filter( r -> r.getId() == id).findFirst().get();
+		} catch(NoSuchElementException e) {
+			return null;
 		}
 	}
 	
