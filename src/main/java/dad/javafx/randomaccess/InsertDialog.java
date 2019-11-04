@@ -18,7 +18,6 @@ public class InsertDialog extends Dialog<Residencia> {
 
 		private StringExpression id, nombre, codUni, precio;
 		
-	
 		public DialogCheckBinding(StringExpression id, StringExpression nombre,
 								  StringExpression codUni, StringExpression precio) {
 			
@@ -74,7 +73,7 @@ public class InsertDialog extends Dialog<Residencia> {
 	private CheckBox comedor;
 	private Node buttonInsert;
 	
-	public InsertDialog() {
+	public InsertDialog(int idResidencia) {
 		
 		// Los textos
 		setTitle("Insertar residencia");
@@ -105,7 +104,9 @@ public class InsertDialog extends Dialog<Residencia> {
 		
 		Label idLbl = new Label("ID:");
 		id = new TextField();
-		id.setPromptText("ID");
+		id.setEditable(false);
+		id.setDisable(true);
+		id.setText( String.valueOf(idResidencia) );
 		id.setPrefColumnCount(2);
 		grid.addRow(1, idLbl , id);
 		

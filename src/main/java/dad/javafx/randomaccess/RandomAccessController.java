@@ -57,6 +57,13 @@ public class RandomAccessController implements Initializable {
 	 */
 	private static final int LEN_RESIDENCIA_BYTES = 51;
 	
+	/**
+	 * El índice de la residencia, es un valor autonumérico.
+	 * Si no hay datos, el valor cuando se introduzca será 1, si hay datos,
+	 * será el siguiente al último.
+	 */
+	int listResiID = 0;
+	
 	// FXML : View
 	//-------------------------------------------------------------------------
 	
@@ -109,8 +116,8 @@ public class RandomAccessController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
-		// Desactivamos los botones si no hay ninguna lista cargada
-		insertResiBt.disableProperty().bind(resiListProperty.emptyProperty()); 
+		// Desactivamos los botones si no hay ningún archivo cargado
+		insertResiBt.disableProperty().bind(residenciasFile.isNull()); 
 		
 		id.bindBidirectional(resiID.textProperty());
 		
@@ -162,27 +169,12 @@ public class RandomAccessController implements Initializable {
 	 * @param nv La residencia seleccionada
 	 */
 	private void onResiIDChanged(Residencia nv) {
-		id.set( String.valueOf(nv.getId()));
+		
+		if( nv != null ) {
+			id.set( String.valueOf(nv.getId()));
+		}
 	}
 
-	/** 
-	 * Tenemosq ue comprobar si la reesidencia es válida, para
-	 * ello lo comparamos con los datos de la tabla para ver
-	 * si ya existe ese ID.
-	 * 
-	 * @param myResi Residencia
-	 * @return Si no existe un ID igual al introducido
-	 */
-	private boolean checkIfResiValid(Residencia myResi) {
-		
-		for( Residencia r : resiListProperty.get()) {
-			
-			if( r.getId() == myResi.getId() ) {
-				return false;
-			}
-		}
-		return true;
-	}
 	
 	/**
 	 * Insertamos una residencia a partir de un cuadro de
@@ -190,23 +182,14 @@ public class RandomAccessController implements Initializable {
 	 */
 	private void insertarResidencia() {
 		
-		InsertDialog dialog = new InsertDialog();
+		// Le pasamos el siguiente ID al último obtenido
+		InsertDialog dialog = new InsertDialog(++listResiID);
 
 		// Cogemos los datos del usuario
 		Optional<Residencia> result = dialog.showAndWait();
 		
 		// Ahora es cuando añadimos datos a la tabla
 		if( result.isPresent() ) {
-			
-			if( !checkIfResiValid(result.get())) {
-				
-				Alert alert = new Alert(AlertType.WARNING);
-				alert.setTitle("Residencia");
-				alert.setHeaderText("Coincidencia por ID");
-				alert.setContentText("La residencia introducida ya existe");
-				alert.showAndWait();
-				return;
-			}
 			
 			// Tenemos que ser cautelosos, tenemos que ajustar bien los caracteres
 			insertResidenciaTable(result.get());
@@ -303,7 +286,7 @@ public class RandomAccessController implements Initializable {
 		FileChooser explorer = new FileChooser();
 		explorer.setTitle("Explorador residencias");
 		// Empezamos por el directorio del usuario
-		explorer.setInitialDirectory( new File( System.getProperty("user.home") ));
+		explorer.setInitialDirectory( new File( System.getProperty("user.dir") ));
 		// Sólo importamos los .dat
 		explorer.getExtensionFilters().add(new FileChooser.ExtensionFilter("data", "*.dat"));
 		// Ahora obtenemos el archivo seleccionado, para ello hay que vincularlo con la ventana actual
@@ -315,6 +298,7 @@ public class RandomAccessController implements Initializable {
 			if( residenciasFile.get() != null ) {
 				// Limpiamos lo que tengamos
 				resiListProperty.clear();
+				listResiID = 0; // Volvemos a calcular los ID
 			}
 			
 			residenciasFile.set(datFile);
@@ -376,6 +360,10 @@ public class RandomAccessController implements Initializable {
 				comedor = resiFile.readBoolean();
 				
 				resiFile.readChar(); // ','
+				
+				// Incrementamos nuestro ID
+				listResiID++;
+				
 				resiListProperty.add(new Residencia(id, nombre, codUni, precio, comedor));
 				
 				nombre = codUni = "";
